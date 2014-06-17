@@ -28,10 +28,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 public class Window extends JFrame {
 	LwjglAWTCanvas canvas;
@@ -41,47 +38,24 @@ public class Window extends JFrame {
 
 	public Window() {
 		setTitle("Atlas generator");
-		setLocationRelativeTo(null);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(false);
-		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
-
-		//Button and list panel
-		final JPanel panel = new JPanel();
-		panel.setLayout(null);
-		panel.setPreferredSize(new Dimension(200, 600));
+		getContentPane().setLayout(new BorderLayout());
 
 		fileChooser = new JFileChooser();
 		fileChooser.setFileFilter(new FileNameExtensionFilter(".png", "png"));
 
-		//Save file button
-		JButton openFile = new JButton("Open file");
-		openFile.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				if (fileChooser.showOpenDialog(Window.this) == JFileChooser.APPROVE_OPTION) {
-					Engine.setAtlas(fileChooser.getSelectedFile());
-				}
-			}
-		});
-		openFile.setBounds(0, 0, 199, 30);
-		panel.add(openFile);
+		createRegionList();
+		createMenuBar();
+		createCanvas();
 
-		//Open file button
-		JButton saveFile = new JButton("Save file");
-		saveFile.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent actionEvent) {
-				if (fileChooser.showSaveDialog(Window.this) == JFileChooser.APPROVE_OPTION) {
-					Engine.saveAtlas(fileChooser.getSelectedFile());
-				}
-			}
-		});
-		saveFile.setBounds(0, 30, 199, 30);
-		panel.add(saveFile);
+		pack();
+		setSize(900, 600);
+		setLocationRelativeTo(null);
+	}
 
+	public void createRegionList() {
 		final JPopupMenu menu = new JPopupMenu();
-
 
 		//Region list
 		listModel = new DefaultListModel<Region>();
@@ -108,14 +82,29 @@ public class Window extends JFrame {
 				}
 			}
 		});
+		list.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent keyEvent) {}
+			@Override
+			public void keyPressed(KeyEvent keyEvent) {}
+
+			@Override
+			public void keyReleased(KeyEvent keyEvent) {
+				switch (keyEvent.getKeyCode()) {
+					case KeyEvent.VK_BACK_SPACE:
+					case KeyEvent.VK_DELETE:
+						listModel.remove(list.getSelectedIndex());
+						return;
+					case KeyEvent.VK_ENTER:
+						showEditRegionDialog();
+				}
+			}
+		});
 
 		JScrollPane scrollPane = new JScrollPane(list);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setBounds(0, 60, 199, 600 - 60);
-		panel.add(scrollPane);
-		//panel.add(list);
-		panel.setBorder(BorderFactory.createLineBorder(Color.black));
+		scrollPane.setPreferredSize(new Dimension(200, Integer.MAX_VALUE));
 
 		//Region list menu
 		JMenuItem delete = new JMenuItem("Delete");
@@ -131,107 +120,142 @@ public class Window extends JFrame {
 		edit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				final JDialog dialog = new JDialog(Window.this);
-				dialog.setTitle("Edit region");
-				dialog.setResizable(false);
-				dialog.setSize(300, 60);
-				dialog.setLayout(new GridBagLayout());
-				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-				final Region region = listModel.get(list.getSelectedIndex());
-
-				GridBagConstraints c = new GridBagConstraints();
-				c.gridheight = 1;
-				c.gridwidth = 1;
-				c.gridx = 0;
-				c.gridy = 0;
-				c.insets = new Insets(3,3,3,3);
-
-				final JSpinner spinnerX1 = new JSpinner(new SpinnerNumberModel(region.getRegionX1(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
-				spinnerX1.addChangeListener(new ChangeListener() {
-					@Override
-					public void stateChanged(ChangeEvent changeEvent) {
-						region.setRegionX1((Integer) spinnerX1.getModel().getValue());
-					}
-				});
-				dialog.add(spinnerX1, c);
-
-				final JSpinner spinnerY1 = new JSpinner(new SpinnerNumberModel(region.getRegionY1(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
-				spinnerY1.addChangeListener(new ChangeListener() {
-					@Override
-					public void stateChanged(ChangeEvent changeEvent) {
-						region.setRegionY1((Integer) spinnerY1.getModel().getValue());
-					}
-				});
-				c.gridx = 1;
-				dialog.add(spinnerY1, c);
-
-				final JSpinner spinnerX2 = new JSpinner(new SpinnerNumberModel(region.getRegionX2(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
-				spinnerX2.addChangeListener(new ChangeListener() {
-					@Override
-					public void stateChanged(ChangeEvent changeEvent) {
-						region.setRegionX2((Integer) spinnerX2.getModel().getValue());
-					}
-				});
-				c.gridx = 0;
-				c.gridy = 1;
-				dialog.add(spinnerX2, c);
-
-				final JSpinner spinnerY2 = new JSpinner(new SpinnerNumberModel(region.getRegionY2(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
-				spinnerY2.addChangeListener(new ChangeListener() {
-					@Override
-					public void stateChanged(ChangeEvent changeEvent) {
-						region.setRegionY2((Integer) spinnerY2.getModel().getValue());
-					}
-				});
-				c.gridx = 1;
-				dialog.add(spinnerY2, c);
-
-				final JTextField textField = new JTextField(region.getName());
-				textField.getDocument().addDocumentListener(new DocumentListener() {
-					@Override
-					public void insertUpdate(DocumentEvent documentEvent) {update();}
-					@Override
-					public void removeUpdate(DocumentEvent documentEvent) {update();}
-					@Override
-					public void changedUpdate(DocumentEvent documentEvent) {update();}
-
-					private void update() {
-						region.setName(textField.getText());
-						list.repaint();
-					}
-				});
-				c.fill = GridBagConstraints.HORIZONTAL;
-				c.gridwidth = 2;
-				c.gridx = 0;
-				c.gridy = 2;
-				dialog.add(textField, c);
-
-				JButton button = new JButton("Done");
-				button.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent actionEvent) {
-						dialog.dispose();
-					}
-				});
-				c.gridy = 3;
-				dialog.add(button, c);
-
-				dialog.setVisible(true);
-				dialog.pack();
+				showEditRegionDialog();
 			}
 		});
 		menu.add(edit);
 
-		getContentPane().add(panel, 0);
+		//add region list to content pane
+		getContentPane().add(scrollPane, BorderLayout.LINE_START);
+	}
 
-		//Libgdx
+	public void createMenuBar() {
+		JMenuBar menuBar = new JMenuBar();
+		JMenu fileMenu = new JMenu("File");
+
+		JMenuItem openFile = new JMenuItem("Open image");
+		openFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (fileChooser.showOpenDialog(Window.this) == JFileChooser.APPROVE_OPTION) {
+					Engine.setAtlas(fileChooser.getSelectedFile());
+				}
+			}
+		});
+		fileMenu.add(openFile);
+
+		JMenuItem saveFile = new JMenuItem("Save atlas");
+		saveFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (fileChooser.showSaveDialog(Window.this) == JFileChooser.APPROVE_OPTION) {
+					Engine.saveAtlas(fileChooser.getSelectedFile());
+				}
+			}
+		});
+
+		fileMenu.add(openFile);
+		fileMenu.add(saveFile);
+		menuBar.add(fileMenu);
+
+		setJMenuBar(menuBar);
+	}
+
+	public void createCanvas() {
 		canvas = new LwjglAWTCanvas(new Engine());
-		canvas.getCanvas().setSize(700, 600);
-		getContentPane().add(canvas.getCanvas(), 1);
+		getContentPane().add(canvas.getCanvas(), BorderLayout.CENTER);
+	}
 
-		pack();
-		setSize(900, 600);
+	public void showEditRegionDialog() {
+		final JDialog dialog = new JDialog(this);
+		dialog.setTitle("Edit region");
+		dialog.setLocationRelativeTo(null);
+		dialog.setResizable(false);
+		dialog.setSize(300, 60);
+		dialog.setLayout(new GridBagLayout());
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+		final Region region = listModel.get(list.getSelectedIndex());
+
+		GridBagConstraints c = new GridBagConstraints();
+		c.gridheight = 1;
+		c.gridwidth = 1;
+		c.gridx = 0;
+		c.gridy = 0;
+		c.insets = new Insets(3,3,3,3);
+
+		final JSpinner spinnerX1 = new JSpinner(new SpinnerNumberModel(region.getRegionX1(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
+		spinnerX1.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				region.setRegionX1((Integer) spinnerX1.getModel().getValue());
+			}
+		});
+		dialog.add(spinnerX1, c);
+
+		final JSpinner spinnerY1 = new JSpinner(new SpinnerNumberModel(region.getRegionY1(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
+		spinnerY1.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				region.setRegionY1((Integer) spinnerY1.getModel().getValue());
+			}
+		});
+		c.gridx = 1;
+		dialog.add(spinnerY1, c);
+
+		final JSpinner spinnerX2 = new JSpinner(new SpinnerNumberModel(region.getRegionX2(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
+		spinnerX2.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				region.setRegionX2((Integer) spinnerX2.getModel().getValue());
+			}
+		});
+		c.gridx = 0;
+		c.gridy = 1;
+		dialog.add(spinnerX2, c);
+
+		final JSpinner spinnerY2 = new JSpinner(new SpinnerNumberModel(region.getRegionY2(), Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
+		spinnerY2.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				region.setRegionY2((Integer) spinnerY2.getModel().getValue());
+			}
+		});
+		c.gridx = 1;
+		dialog.add(spinnerY2, c);
+
+		final JTextField textField = new JTextField(region.getName());
+		textField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent documentEvent) {update();}
+			@Override
+			public void removeUpdate(DocumentEvent documentEvent) {update();}
+			@Override
+			public void changedUpdate(DocumentEvent documentEvent) {update();}
+
+			private void update() {
+				region.setName(textField.getText());
+				list.repaint();
+			}
+		});
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridwidth = 2;
+		c.gridx = 0;
+		c.gridy = 2;
+		dialog.add(textField, c);
+
+		JButton button = new JButton("Done");
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				dialog.dispose();
+			}
+		});
+		c.gridy = 3;
+		dialog.add(button, c);
+
+		dialog.setVisible(true);
+		dialog.pack();
 	}
 
 	@Override

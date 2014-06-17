@@ -41,7 +41,6 @@ public class Engine extends ApplicationAdapter {
 	private static AtlasImg atlasImg;
 
 	private static Region region = new Region(0, 0, 0, 0);
-	//private static ArrayList<Region> regions = new ArrayList<Region>();
 
 	@Override
 	public void create () {
