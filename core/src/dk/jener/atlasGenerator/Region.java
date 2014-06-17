@@ -110,10 +110,30 @@ public class Region {
 
 	public void draw(ShapeRenderer shapeRenderer, AtlasImg atlasImg) {
 		if (active) {
-			shapeRenderer.line(atlasImg.fromAtlasImageCordX(regionX1), 						atlasImg.fromAtlasImageCordY(regionY1), 					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(), 	atlasImg.fromAtlasImageCordY(regionY1));
-			shapeRenderer.line(atlasImg.fromAtlasImageCordX(regionX1), 						atlasImg.fromAtlasImageCordY(regionY1), 					atlasImg.fromAtlasImageCordX(regionX1), 					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
-			shapeRenderer.line(atlasImg.fromAtlasImageCordX(regionX1),						atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom(),	atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(), 	atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
-			shapeRenderer.line(atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(), 	atlasImg.fromAtlasImageCordY(regionY1), 					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),	atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
+			//top
+			shapeRenderer.line(
+					atlasImg.fromAtlasImageCordX(regionX1),
+					atlasImg.fromAtlasImageCordY(regionY1),
+					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordY(regionY1));
+			//left
+			shapeRenderer.line(
+					atlasImg.fromAtlasImageCordX(regionX1),
+					atlasImg.fromAtlasImageCordY(regionY1),
+					atlasImg.fromAtlasImageCordX(regionX1),
+					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
+			//bottom
+			shapeRenderer.line(
+					atlasImg.fromAtlasImageCordX(regionX1),
+					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
+			//right
+			shapeRenderer.line(
+					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordY(regionY1),
+					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
 		}
 	}
 

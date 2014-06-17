@@ -40,7 +40,7 @@ public class Window extends JFrame {
 	public Window() {
 		setTitle("Atlas generator");
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setResizable(false);
+		setResizable(true);
 		getContentPane().setLayout(new BorderLayout());
 
 		fileChooser = new JFileChooser();
@@ -94,7 +94,7 @@ public class Window extends JFrame {
 				switch (keyEvent.getKeyCode()) {
 					case KeyEvent.VK_BACK_SPACE:
 					case KeyEvent.VK_DELETE:
-						listModel.remove(list.getSelectedIndex());
+						if (!list.isSelectionEmpty()) listModel.remove(list.getSelectedIndex());
 						return;
 					case KeyEvent.VK_ENTER:
 						showEditRegionDialog();
