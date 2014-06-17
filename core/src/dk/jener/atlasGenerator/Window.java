@@ -29,6 +29,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 
 public class Window extends JFrame {
 	LwjglAWTCanvas canvas;
@@ -131,8 +132,9 @@ public class Window extends JFrame {
 
 	public void createMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
-		JMenu fileMenu = new JMenu("File");
 
+		//File Menu
+		JMenu fileMenu = new JMenu("File");
 		JMenuItem openFile = new JMenuItem("Open image");
 		openFile.addActionListener(new ActionListener() {
 			@Override
@@ -158,6 +160,19 @@ public class Window extends JFrame {
 		fileMenu.add(saveFile);
 		menuBar.add(fileMenu);
 
+		//About menu
+		JMenu generalMenu = new JMenu("General");
+		JMenuItem licenseItem = new JMenuItem("license");
+		licenseItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				showLicenseDialog();
+			}
+		});
+		generalMenu.add(licenseItem);
+		menuBar.add(generalMenu);
+
+
 		setJMenuBar(menuBar);
 	}
 
@@ -169,7 +184,7 @@ public class Window extends JFrame {
 	public void showEditRegionDialog() {
 		final JDialog dialog = new JDialog(this);
 		dialog.setTitle("Edit region");
-		dialog.setLocationRelativeTo(null);
+		dialog.setLocationRelativeTo(this);
 		dialog.setResizable(false);
 		dialog.setSize(300, 60);
 		dialog.setLayout(new GridBagLayout());
@@ -256,6 +271,44 @@ public class Window extends JFrame {
 
 		dialog.setVisible(true);
 		dialog.pack();
+	}
+
+	public void showLicenseDialog() {
+		final JDialog dialog = new JDialog(this);
+		dialog.setTitle("License");
+		dialog.setLocationRelativeTo(this);
+		dialog.setResizable(true);
+		dialog.setMinimumSize(new Dimension(300, 300));
+		dialog.setSize(400, 400);
+		dialog.setLayout(new BorderLayout());
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+
+		JTextArea licensetextArea = new JTextArea();
+		licensetextArea.setLineWrap(false);
+		licensetextArea.setCaretPosition(0);
+		licensetextArea.setEditable(false);
+		JScrollPane scrollPane = new JScrollPane(licensetextArea);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		dialog.add(scrollPane, BorderLayout.CENTER);
+
+		dialog.setVisible(true);
+
+		try {
+			InputStream inputStream = Window.class.getClassLoader().getResourceAsStream("license.txt");
+			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+			BufferedReader reader = new BufferedReader(inputStreamReader);
+
+			String line;
+			while ((line = reader.readLine()) != null) {
+				licensetextArea.append(line + "\n");
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
