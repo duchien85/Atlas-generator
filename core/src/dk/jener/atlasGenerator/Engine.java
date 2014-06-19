@@ -36,6 +36,7 @@ public class Engine extends ApplicationAdapter {
 	private Texture img;
 	private static ScreenViewport viewport;
 	private Stage stage;
+
 	private static File file;
 	private static boolean filePendingLoading;
 	private static AtlasImg atlasImg;
@@ -99,6 +100,8 @@ public class Engine extends ApplicationAdapter {
 			atlasImg.setTexture(img);
 			filePendingLoading = false;
 			Gdx.app.debug("debug", "loaded image");
+
+			Window.getSaveFile().setEnabled(true);
 		}
 	}
 
@@ -136,26 +139,46 @@ public class Engine extends ApplicationAdapter {
 		Window.getListModel().clear();
 	}
 
-	public static void saveAtlas(File file) {
+	public static void saveAtlas(File atlasFile) {
 		String atlasText = file.getName() + "\n" +
 				"size: " + atlasImg.getTexture().getWidth() + "," + atlasImg.getTexture().getHeight() + "\n" +
 				"format: RGBA8888\n" +
 				"filter: Nearest,Nearest\n" +
 				"repeat: none";
 
+		//ToDo: Update the export code to support grids
+		Region region;
+		Grid grid;
 		for (int i = 0; i < Window.getListModel().size(); i++) {
-			Region region = Window.getListModel().get(i);
-			atlasText += "\n" +
-					region.getName() + "\n" +
-					"  rotate: false\n" +
-					"  xy: " + region.getLowerX() + ", " + region.getLowerY() + "\n" +
-					"  size: " + region.getWidth() + ", " + region.getHeight() + "\n" +
-					"  orig: 0, 0\n" +
-					"  offset: 0, 0\n" +
-					"  index: -1";
+			ShapeDrawable shapeDrawable = Window.getListModel().get(i);
+			if (shapeDrawable instanceof Region) {
+				region = (Region) shapeDrawable;
+				atlasText += "\n" +
+						region.getName() + "\n" +
+						"  rotate: false\n" +
+						"  xy: " + region.getLowerX() + ", " + region.getLowerY() + "\n" +
+						"  size: " + region.getWidth() + ", " + region.getHeight() + "\n" +
+						"  orig: 0, 0\n" +
+						"  offset: 0, 0\n" +
+						"  index: -1";
+			} else if (shapeDrawable instanceof Grid) {
+				grid = (Grid) shapeDrawable;
+				for (int x = 0; x < grid.getGridWidth(); x++) {
+					for (int y = 0; y < grid.getGridHeight(); y++) {
+						atlasText += "\n" +
+								grid.getName() + (x*grid.getGridHeight()+y) + "\n" +
+								"  rotate: false\n" +
+								"  xy: " + ((grid.getPaddingLeft() + grid.getCellWidth() + grid.getPaddingRight()) * x + grid.getPaddingLeft()) + ", " + (grid.getPaddingTop() + grid.getCellHeight() + grid.getPaddingBottom()) * y + grid.getPaddingBottom() + "\n" +
+								"  size: " + grid.getCellWidth() + ", " + grid.getCellHeight() + "\n" +
+								"  orig: 0, 0\n" +
+								"  offset: 0, 0\n" +
+								"  index: -1";
+					}
+				}
+			}
 		}
 
-		Gdx.files.absolute(file.getAbsolutePath()).writeString(atlasText, false);
+		Gdx.files.absolute(atlasFile.getAbsolutePath()).writeString(atlasText, false);
 	}
 
 	public static ScreenViewport getViewport() {

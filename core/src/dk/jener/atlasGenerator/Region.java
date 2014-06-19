@@ -20,7 +20,7 @@ package dk.jener.atlasGenerator;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public class Region {
+public class Region implements ShapeDrawable {
 	private static int id = 0;
 
 	private int regionX1, regionX2, regionY1, regionY2;
@@ -114,26 +114,26 @@ public class Region {
 			shapeRenderer.line(
 					atlasImg.fromAtlasImageCordX(regionX1),
 					atlasImg.fromAtlasImageCordY(regionY1),
-					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordX(regionX2)+ atlasImg.getZoom(),
 					atlasImg.fromAtlasImageCordY(regionY1));
 			//left
 			shapeRenderer.line(
 					atlasImg.fromAtlasImageCordX(regionX1),
 					atlasImg.fromAtlasImageCordY(regionY1),
 					atlasImg.fromAtlasImageCordX(regionX1),
-					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
+					atlasImg.fromAtlasImageCordY(regionY2)+ atlasImg.getZoom());
 			//bottom
 			shapeRenderer.line(
 					atlasImg.fromAtlasImageCordX(regionX1),
-					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom(),
-					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),
-					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
+					atlasImg.fromAtlasImageCordY(regionY2)+ atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordX(regionX2)+ atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordY(regionY2)+ atlasImg.getZoom());
 			//right
 			shapeRenderer.line(
-					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordX(regionX2)+ atlasImg.getZoom(),
 					atlasImg.fromAtlasImageCordY(regionY1),
-					atlasImg.fromAtlasImageCordX(regionX2)+atlasImg.getZoom(),
-					atlasImg.fromAtlasImageCordY(regionY2)+atlasImg.getZoom());
+					atlasImg.fromAtlasImageCordX(regionX2)+ atlasImg.getZoom(),
+					atlasImg.fromAtlasImageCordY(regionY2)+ atlasImg.getZoom());
 		}
 	}
 

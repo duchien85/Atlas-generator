@@ -18,7 +18,6 @@
 
 package dk.jener.atlasGenerator;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglAWTCanvas;
 
 import javax.swing.*;
@@ -33,9 +32,10 @@ import java.io.*;
 
 public class Window extends JFrame {
 	LwjglAWTCanvas canvas;
-	private static DefaultListModel<Region> listModel;
-	private static JList<Region> list;
+	private static DefaultListModel<ShapeDrawable> listModel;
+	private static JList<ShapeDrawable> list;
 	private JFileChooser fileChooser;
+	private static JMenuItem saveFile;
 
 	public Window() {
 		setTitle("Atlas generator");
@@ -59,8 +59,8 @@ public class Window extends JFrame {
 		final JPopupMenu menu = new JPopupMenu();
 
 		//Region list
-		listModel = new DefaultListModel<Region>();
-		list = new JList<Region>(listModel);
+		listModel = new DefaultListModel<ShapeDrawable>();
+		list = new JList<ShapeDrawable>(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
 		list.addMouseListener(new MouseAdapter() {
@@ -97,7 +97,7 @@ public class Window extends JFrame {
 						if (!list.isSelectionEmpty()) listModel.remove(list.getSelectedIndex());
 						return;
 					case KeyEvent.VK_ENTER:
-						showEditRegionDialog();
+						showDialog(listModel.get(list.getSelectedIndex()));
 				}
 			}
 		});
@@ -121,7 +121,7 @@ public class Window extends JFrame {
 		edit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
-				showEditRegionDialog();
+				showDialog(listModel.get(list.getSelectedIndex()));
 			}
 		});
 		menu.add(edit);
@@ -146,7 +146,7 @@ public class Window extends JFrame {
 		});
 		fileMenu.add(openFile);
 
-		JMenuItem saveFile = new JMenuItem("Save atlas");
+		saveFile = new JMenuItem("Save atlas");
 		saveFile.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -155,10 +155,25 @@ public class Window extends JFrame {
 				}
 			}
 		});
+		saveFile.setEnabled(false);
 
 		fileMenu.add(openFile);
 		fileMenu.add(saveFile);
 		menuBar.add(fileMenu);
+
+
+		//Tools menu
+		JMenu toolsMenu = new JMenu("Tools");
+		JMenuItem createGrid = new JMenuItem("Create grid");
+		createGrid.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				showGridDialog(new Grid(), true);
+			}
+		});
+		toolsMenu.add(createGrid);
+		menuBar.add(toolsMenu);
+
 
 		//About menu
 		JMenu generalMenu = new JMenu("General");
@@ -181,7 +196,12 @@ public class Window extends JFrame {
 		getContentPane().add(canvas.getCanvas(), BorderLayout.CENTER);
 	}
 
-	public void showEditRegionDialog() {
+	public void showDialog(ShapeDrawable shapeDrawable) {
+		if (shapeDrawable instanceof Region) showRegionDialog((Region) shapeDrawable);
+		else if (shapeDrawable instanceof Grid) showGridDialog((Grid) shapeDrawable, false);
+	}
+
+	public void showRegionDialog(final Region region) {
 		final JDialog dialog = new JDialog(this);
 		dialog.setTitle("Edit region");
 		dialog.setLocationRelativeTo(this);
@@ -189,8 +209,6 @@ public class Window extends JFrame {
 		dialog.setSize(300, 60);
 		dialog.setLayout(new GridBagLayout());
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-		final Region region = listModel.get(list.getSelectedIndex());
 
 		GridBagConstraints c = new GridBagConstraints();
 		c.gridheight = 1;
@@ -279,7 +297,7 @@ public class Window extends JFrame {
 		dialog.setLocationRelativeTo(this);
 		dialog.setResizable(true);
 		dialog.setMinimumSize(new Dimension(300, 300));
-		dialog.setSize(400, 400);
+		dialog.setSize(650, 650);
 		dialog.setLayout(new BorderLayout());
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
@@ -311,17 +329,179 @@ public class Window extends JFrame {
 		}
 	}
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		Gdx.app.exit();
+	public void showGridDialog(final Grid grid, final boolean isNew) {
+		final JDialog dialog = new JDialog(this);
+		dialog.setTitle("Grid");
+		dialog.setLocationRelativeTo(this);
+		dialog.setResizable(false);
+		dialog.setLayout(new GridBagLayout());
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.BOTH;
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.insets = new Insets(3, 3, 3, 3);
+
+		dialog.add(new JLabel("Grid width"), c);
+		c.gridx = 1;
+		final JSpinner gridWidth = new JSpinner(new SpinnerNumberModel(grid.getGridWidth(), 1, Integer.MAX_VALUE, 1));
+		gridWidth.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				grid.setGridWidth((Integer) gridWidth.getValue());
+			}
+		});
+		dialog.add(gridWidth, c);
+
+		c.gridx = 0;
+		c.gridy = 1;
+		dialog.add(new JLabel("Grid height"), c);
+		c.gridx = 1;
+		final JSpinner gridHeight = new JSpinner(new SpinnerNumberModel(grid.getGridHeight(), 1, Integer.MAX_VALUE, 1));
+		gridHeight.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				grid.setGridHeight((Integer) gridHeight.getValue());
+			}
+		});
+		dialog.add(gridHeight, c);
+
+		c.gridx = 0;
+		c.gridy = 2;
+		dialog.add(new JLabel("Cell width"), c);
+		c.gridx = 1;
+		final JSpinner cellWidth = new JSpinner(new SpinnerNumberModel(grid.getCellWidth(), 1, Integer.MAX_VALUE, 1));
+		cellWidth.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				grid.setCellWidth((Integer) cellWidth.getValue());
+			}
+		});
+		dialog.add(cellWidth, c);
+
+		c.gridx = 0;
+		c.gridy = 3;
+		dialog.add(new JLabel("Cell height"), c);
+		c.gridx = 1;
+		final JSpinner cellHeight = new JSpinner(new SpinnerNumberModel(grid.getCellHeight(), 0, Integer.MAX_VALUE, 1));
+		cellHeight.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				grid.setCellHeight((Integer) cellHeight.getValue());
+			}
+		});
+		dialog.add(cellHeight, c);
+
+		c.gridx = 0;
+		c.gridy = 4;
+		dialog.add(new JLabel("Padding right"), c);
+		c.gridx = 1;
+		final JSpinner paddingRight = new JSpinner(new SpinnerNumberModel(grid.getPaddingRight(), 0, Integer.MAX_VALUE, 1));
+		paddingRight.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				grid.setPaddingRight((Integer) paddingRight.getValue());
+			}
+		});
+		dialog.add(paddingRight, c);
+
+		c.gridx = 0;
+		c.gridy = 5;
+		dialog.add(new JLabel("Padding left"), c);
+		c.gridx = 1;
+		final JSpinner paddingLeft = new JSpinner(new SpinnerNumberModel(grid.getPaddingLeft(), 0, Integer.MAX_VALUE, 1));
+		paddingLeft.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				grid.setPaddingLeft((Integer) paddingLeft.getValue());
+			}
+		});
+		dialog.add(paddingLeft, c);
+
+		c.gridx = 0;
+		c.gridy = 6;
+		dialog.add(new JLabel("Padding top"), c);
+		c.gridx = 1;
+		final JSpinner paddingTop = new JSpinner(new SpinnerNumberModel(grid.getPaddingTop(), 0, Integer.MAX_VALUE, 1));
+		paddingTop.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				grid.setPaddingTop((Integer) paddingTop.getValue());
+			}
+		});
+		dialog.add(paddingTop, c);
+
+		c.gridx = 0;
+		c.gridy = 7;
+		dialog.add(new JLabel("Padding bottom"), c);
+		c.gridx = 1;
+		final JSpinner paddingBottom = new JSpinner(new SpinnerNumberModel(grid.getPaddingBottom(), 0, Integer.MAX_VALUE, 1));
+		paddingBottom.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				grid.setPaddingBottom((Integer) paddingBottom.getValue());
+			}
+		});
+		dialog.add(paddingBottom, c);
+
+		c.gridx = 0;
+		c.gridy = 8;
+		dialog.add(new JLabel("Name"), c);
+		c.gridx = 1;
+		final JTextField nameTextField = new JTextField(grid.getName());
+		nameTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent documentEvent) {
+				change();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent documentEvent) {
+				change();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent documentEvent) {
+				change();
+			}
+
+			public void change() {
+				grid.setName(nameTextField.getText());
+			}
+		});
+		dialog.add(nameTextField, c);
+
+		c.gridx = 0;
+		c.gridy = 9;
+		c.gridwidth = 2;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		JButton doneButton = new JButton("Done");
+		doneButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (isNew) Window.getListModel().addElement(grid);
+				dialog.dispose();
+			}
+		});
+		dialog.add(doneButton, c);
+
+		dialog.pack();
+		dialog.setVisible(true);
 	}
 
-	public static DefaultListModel<Region> getListModel() {
+	public static DefaultListModel<ShapeDrawable> getListModel() {
 		return listModel;
 	}
 
-	public static JList<Region> getList() {
+	public static JList<ShapeDrawable> getList() {
 		return list;
+	}
+
+	public static JMenuItem getSaveFile() {
+		return saveFile;
 	}
 }
