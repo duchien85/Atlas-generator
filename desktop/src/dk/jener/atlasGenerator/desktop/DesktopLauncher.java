@@ -35,6 +35,8 @@ public class DesktopLauncher {
 		//new LwjglAWTCanvas(new Engine());
 		//Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
+		System.setProperty("apple.laf.useScreenMenuBar", "true");
+
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {

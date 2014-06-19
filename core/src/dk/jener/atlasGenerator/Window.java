@@ -395,7 +395,7 @@ public class Window extends JFrame {
 		c.gridy = 3;
 		dialog.add(new JLabel("Cell height"), c);
 		c.gridx = 1;
-		final JSpinner cellHeight = new JSpinner(new SpinnerNumberModel(grid.getCellHeight(), 0, Integer.MAX_VALUE, 1));
+		final JSpinner cellHeight = new JSpinner(new SpinnerNumberModel(grid.getCellHeight(), 1, Integer.MAX_VALUE, 1));
 		cellHeight.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent changeEvent) {
