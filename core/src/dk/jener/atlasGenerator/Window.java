@@ -38,6 +38,14 @@ public class Window extends JFrame {
 	private static JMenuItem saveFile;
 
 	public Window() {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException ignored) {
+		} catch (InstantiationException ignored) {
+		} catch (IllegalAccessException ignored) {
+		} catch (UnsupportedLookAndFeelException ignored) {
+		}
+
 		setTitle("Atlas generator");
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(true);
