@@ -146,7 +146,6 @@ public class Engine extends ApplicationAdapter {
 				"filter: Nearest,Nearest\n" +
 				"repeat: none";
 
-		//ToDo: Update the export code to support grids
 		Region region;
 		Grid grid;
 		for (int i = 0; i < Window.getListModel().size(); i++) {
