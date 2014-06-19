@@ -41,7 +41,7 @@ public class Engine extends ApplicationAdapter {
 	private static boolean filePendingLoading;
 	private static AtlasImg atlasImg;
 
-	private static Region region = new Region(0, 0, 0, 0);
+	private static Region region = new Region(0, 0, 0, 0, false);
 
 	@Override
 	public void create () {

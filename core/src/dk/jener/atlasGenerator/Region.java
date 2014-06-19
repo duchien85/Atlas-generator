@@ -27,6 +27,11 @@ public class Region implements ShapeDrawable {
 	private String name;
 	private boolean active = true;
 
+	public Region(int regionX1, int regionX2, int regionY1, int regionY2, boolean active) {
+		this(regionX1, regionX2, regionY1, regionY2);
+		this.active = active;
+	}
+
 	public Region(int regionX1, int regionX2, int regionY1, int regionY2) {
 		this.regionX1 = regionX1;
 		this.regionX2 = regionX2;
